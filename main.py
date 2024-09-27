@@ -16,7 +16,7 @@ os.makedirs(SUBTOPICS_DIR, exist_ok=True)
 
 if __name__ == "__main__":
     option = int(input(
-        "\n1. Preprocessing\n2. QP Generation\n3. Feedback\n4. Teaching\nEnter your option: "))
+        "\n1. Preprocessing\n2. Agent\nEnter your option: "))
 
     if option == 1:
         from src.chains import preprocess_pdf
@@ -33,13 +33,6 @@ if __name__ == "__main__":
                 json_file.write(subtopics)
 
     elif option == 2:
-        from src.chains import qp_generation
-
-        while True:
-            user_input = input("\nEnter query: ")
-            print(qp_generation(user_input))
-
-    elif option in (3, 4):
         from src.agent import get_our_agent
         from langchain.memory import ConversationBufferMemory
 
@@ -49,14 +42,13 @@ if __name__ == "__main__":
         )
         agent_executor = get_our_agent(memory=memory)
         while True:
-            context = input("Enter context: ")
-            user_input = input("\nEnter your doubt: ")
+            user_input = input("\nStudent: ")
             chat_history = memory.buffer_as_messages
             response = agent_executor.invoke({
-                "input": f"Context: {context}\nStudent query: {user_input}",
+                "input": user_input,
                 "chat_history": chat_history,
             })
-            print(response["output"])
+            print(f"Agent: {response['output']}")
 
     else:
         print("Exiting.")

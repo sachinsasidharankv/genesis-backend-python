@@ -30,19 +30,20 @@ def feedback_tool(exam_results: dict, student_summary: str) -> str:
         template=feedback_prompt_template
     )
 
+    parser = JsonOutputParser(pydantic_object=FeedbackModel)
+
     @chain
     def generate_feedback(inputs: dict) -> str | list[str] | dict:
         response = llm.invoke([
             SystemMessage(
                 content=[
                     {"type": "text", "text": inputs["prompt"]},
+                    {"type": "text", "text": parser.get_format_instructions()},
                 ]
             )
         ])
 
         return response.content
-
-    parser = JsonOutputParser(pydantic_object=FeedbackModel)
 
     feedback_chain = generate_feedback | parser
 

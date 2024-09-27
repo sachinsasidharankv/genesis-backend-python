@@ -14,13 +14,14 @@ class QPSubtopicModel(BaseModel):
 
 
 class Action(str, Enum):
-    CHOOSE_EXAM = "CHOOSE_EXAM"
-    CHOOSE_NOTES = "CHOOSE_NOTES"
+    ATTEND_EXAM = "ATTEND_EXAM"
+    REFER_NOTES = "REFER_NOTES"
 
 
 class ActionModel(BaseModel):
     """Action to be taken based on student request"""
-    action: Action = Field(description="action to be taken based on student query")
+    actions: list[Action] = Field(description="action to be taken based on student query")
+    question: str = Field(description="asking the user which action to take")
 
 
 class Difficulty(str, Enum):

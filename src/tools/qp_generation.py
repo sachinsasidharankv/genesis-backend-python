@@ -8,7 +8,7 @@ from langchain_core.output_parsers import JsonOutputParser
 
 from src.models import QPSubtopicModel, QuestionModel
 from src.utils import get_llm, pil_image_to_base64
-from src.constants import exam, num_questions, subtopics, student_summary
+from src.constants import exam, subtopics, student_summary
 from src.chains.mutlimodal_rag import get_relevant_pdf_pages
 
 
@@ -16,12 +16,15 @@ UPLOAD_DIR = os.environ.get("UPLOAD_DIR", "uploads")
 
 
 @tool(return_direct=True)
-def qp_generation(student_query: str):
-    """Tool used to generate a question paper based on student query"""
+def qp_generation_tool(student_query: str, num_questions: int, time: int = None):
+    """Tool used to generate a question paper based on student query.
+    Number of questions and time are given by the user.
+    The test can also be generated without a timer.
+    """
     llm = get_llm(temperature=0)
 
     identify_subtopics_prompt_template = """
-    You are tasked to identify relevant subtopics for a student preparing for {exam}.
+    You are tasked to identify relevant subtopics for a student preparing for {exam} for {time} seconds.
     The subtopics should be selected from the following list based on the student's query and their past {exam} performance summary.
     You are allowed to select more than one subtopics from the list.
     The student's query is: "{student_query}".
@@ -92,16 +95,16 @@ def qp_generation(student_query: str):
     The student has given a query: "{student_query}".
 
     Based on the selected subtopics, prepare questions based on the student query.
-    If student query doesn't mention anything about the number of questions, you can generate {num_questions} questions.
+    You have to strictly generate {num_questions} questions.
 
     For each question, provide:
     - The question (difficulty should be based on {exam}).
     - 4 answer options (follow the same pattern as of {exam}).
     - The correct answer (the list index of the correct option).
     - The difficulty of the question (easy, medium or hard).
-    - Total time allowed (time for answering this particular question (in seconds) based on {exam} and student query).
+    - Total time allowed (time for answering this particular question (in seconds) based on {exam}) (set time = 0 if question paper is without a timer).
     - The related subtopics (taken from the give subtopic list).
-    - A detailed explanation of why the correct answer is right (should be very detailed containing everything that the student requires to answer this question, as we require this to clarify the student's doubts).
+    - A detailed explanation of the correct answer (should be very detailed containing everything that the student requires to answer this question, as we require this to clarify the student's doubts).
 
     A summary of the student's preferences and past performances are also given below.
     Use the summary to make proper questions (by changing the difficulty for the questions) according to the student's current level of performance.
@@ -150,11 +153,12 @@ def qp_generation(student_query: str):
     result = qp_generation_chain.invoke(
         {
             "prompt": qp_generation_prompt.format_prompt(
-                num_questions=num_questions,
-                exam=exam,
                 student_query=student_query,
-                identified_subtopics=", ".join(identified_subtopics),
-                student_summary=student_summary
+                num_questions=num_questions,
+                time=time,
+                exam=exam,
+                student_summary=student_summary,
+                identified_subtopics=", ".join(identified_subtopics)
             ).to_string(),
             "pages_base64": pages_base64
         }
