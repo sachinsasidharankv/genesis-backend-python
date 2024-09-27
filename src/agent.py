@@ -1,5 +1,7 @@
 from langchain import hub
 from langchain.agents import create_openai_tools_agent, AgentExecutor
+from langchain_community.chat_message_histories import ChatMessageHistory
+from langchain_core.runnables.history import RunnableWithMessageHistory
 
 from src.utils import get_llm
 from src.tools import (
@@ -15,7 +17,7 @@ from src.tools import (
 )
 
 
-def get_our_agent(memory=None):
+def get_mars_agent(session_id):
     llm = get_llm(temperature=0)
 
     tools = [
@@ -40,8 +42,15 @@ def get_our_agent(memory=None):
     agent_executor = AgentExecutor(
         agent=agent,
         tools=tools,
-        memory=memory,
         handle_parsing_errors=True
     )
 
-    return agent_executor
+    memory = ChatMessageHistory(session_id=session_id)
+    agent_with_chat_history = RunnableWithMessageHistory(
+        agent_executor,
+        lambda session_id: memory,
+        input_messages_key="input",
+        history_messages_key="chat_history",
+    )
+
+    return agent_with_chat_history

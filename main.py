@@ -10,6 +10,7 @@ is_debug = os.environ.get("DEBUG_MODE") == "true"
 langchain.globals.set_debug(is_debug)
 UPLOAD_DIR = os.environ.get("UPLOAD_DIR", "uploads")
 SUBTOPICS_DIR = os.environ.get("SUBTOPICS_DIR", "subtopics")
+SESSION_ID = os.environ.get("SESSION_ID", "test")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(SUBTOPICS_DIR, exist_ok=True)
 
@@ -22,32 +23,27 @@ if __name__ == "__main__":
         from src.chains import preprocess_pdf
 
         while True:
-            user_input = input("\nEnter PDF filename: ")
+            student_input = input("\nEnter PDF filename: ")
             subtopics = preprocess_pdf(
-                filepath=f"{UPLOAD_DIR}/{user_input}",
-                index_name=user_input
+                filepath=f"{UPLOAD_DIR}/{student_input}",
+                index_name=student_input
             )
 
-            filename = f"{SUBTOPICS_DIR}/{user_input.split('.')[0]}_subtopics.json"
+            filename = f"{SUBTOPICS_DIR}/{student_input.split('.')[0]}_subtopics.json"
             with open(filename, 'w', encoding='utf-8') as json_file:
                 json_file.write(subtopics)
 
     elif option == 2:
-        from src.agent import get_our_agent
-        from langchain.memory import ConversationBufferMemory
+        from src.agent import get_mars_agent
 
-        memory = ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True
-        )
-        agent_executor = get_our_agent(memory=memory)
+        mars_agent = get_mars_agent(session_id=SESSION_ID)
         while True:
-            user_input = input("\nStudent: ")
-            chat_history = memory.buffer_as_messages
-            response = agent_executor.invoke({
-                "input": user_input,
-                "chat_history": chat_history,
-            })
+            student_input = input("\nStudent: ")
+            response = mars_agent.invoke({
+                "input": student_input
+            },
+                config={"configurable": {"session_id": SESSION_ID}},
+            )
             print(f"Agent: {response['output']}")
 
     else:

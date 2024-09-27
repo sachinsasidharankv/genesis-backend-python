@@ -42,6 +42,7 @@ app.add_middleware(
 
 UPLOAD_DIRECTORY = "uploads"
 Path(UPLOAD_DIRECTORY).mkdir(parents=True, exist_ok=True)
+SESSION_ID = os.environ.get("SESSION_ID", "test")
 
 app.add_api_websocket_route("/ws", websocket_endpoint)
 
@@ -72,47 +73,41 @@ async def preprocess(file: UploadFile = File(...), user_input: str = Form(...)):
 #     return {"question_paper": req}
 
 
-@app.get("/feedback")
-def feedback(req: UserInput):
-    from src.agent import get_our_agent
-    from langchain.memory import ConversationBufferMemory
+# @app.get("/feedback")
+# def feedback(req: UserInput):
+#     from src.agent import get_mars_agent
+#     from langchain.memory import ConversationBufferMemory
 
-    memory = ConversationBufferMemory(
-        memory_key="chat_history",
-        return_messages=True
-    )
-    agent_executor = get_our_agent(memory=memory)
+#     memory = ConversationBufferMemory(
+#         memory_key="chat_history",
+#         return_messages=True
+#     )
+#     agent_executor = get_mars_agent(memory=memory)
 
-    chat_history = memory.buffer_as_messages
-    response = agent_executor.invoke({
-        "input": f"Context: {req.context}\nStudent query: {req.query}",
-        "chat_history": chat_history,
-    })
-    print(response["output"])
+#     chat_history = memory.buffer_as_messages
+#     response = agent_executor.invoke({
+#         "input": f"Context: {req.context}\nStudent query: {req.query}",
+#         "chat_history": chat_history,
+#     })
+#     print(response["output"])
 
 
-@app.post("/agent")
-def agent(req: UserInput):
-    return {
-        "context": req.context,
-        "query": req.query
-    }
+# @app.post("/agent")
+# def agent(req: UserInput):
+#     return {
+#         "context": req.context,
+#         "query": req.query
+#     }
 
 @app.post("/ask-copilot")
 def ask_copilot(req: UserInput):
-    from src.agent import get_our_agent
-    from langchain.memory import ConversationBufferMemory
+    from src.agent import get_mars_agent
 
-    memory = ConversationBufferMemory(
-        memory_key="chat_history",
-        return_messages=True
+    mars_agent = get_mars_agent(session_id=SESSION_ID)
+    response = mars_agent.invoke({
+        "input": str(req)
+    },
+        config={"configurable": {"session_id": SESSION_ID}},
     )
-    agent_executor = get_our_agent(memory=memory)
-
-    chat_history = memory.buffer_as_messages
-    response = agent_executor.invoke({
-            "input": str(req),
-            "chat_history": chat_history,
-        })
     print(f"Agent: {response['output']}")
     return {"response": response['output']}
