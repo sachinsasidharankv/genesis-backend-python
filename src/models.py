@@ -45,4 +45,5 @@ class FeedbackModel(BaseModel):
     """Feedback generation"""
     overall_feedback: str = Field(description="one-line feedback on the overall performance")
     overall_suggestion: str = Field(description="one-line suggestion on how to improve")
+    updated_summary: str = Field(description="updated student summary after analysing past summary and current feedback and insights")
     question_specific_feedback: list[str] = Field(description="one-line feedback on each question")

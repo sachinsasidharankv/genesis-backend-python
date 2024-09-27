@@ -26,6 +26,7 @@ def feedback_tool(
 
     A summary of the student's preferences and past performances are also given below.
     Use the summary to give suggestions on how to improve in upcoming exams.
+    Also, update the current summary to include the improvements and insights of the student.
     Student summary: "{student_summary}"
     """
 
