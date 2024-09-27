@@ -5,11 +5,11 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, UploadFile, File, Form
 from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+import langchain.globals
 
 from src.chains import preprocess_pdf
 from src.voice.websocket import websocket_endpoint
 from src.utils import convert_response_output
-import langchain.globals
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
@@ -68,11 +68,17 @@ async def preprocess(file: UploadFile = File(...), user_input: str = Form(...)):
     return {"preprocessed": file_location}
 
 
+# @app.post("/init-copilot")
+# def init_copilot(req: UserInput):
+#     response = init_mars_agent(session_id=req.user_id)
+#     return convert_response_output(response)
+
+
 @app.post("/ask-copilot")
 def ask_copilot(req: UserInput):
     from src.agent import get_mars_agent
 
-    mars_agent = get_mars_agent(session_id=SESSION_ID)
+    mars_agent = get_mars_agent()
     response = mars_agent.invoke({
         "input": str(req)
     },

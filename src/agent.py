@@ -1,3 +1,5 @@
+import os
+
 from langchain import hub
 from langchain.agents import create_openai_tools_agent, AgentExecutor
 from langchain_community.chat_message_histories import ChatMessageHistory
@@ -17,7 +19,7 @@ from src.tools import (
 )
 
 
-def get_mars_agent(session_id):
+def init_mars_agent(session_id):
     llm = get_llm(model_name="gpt-4o", use_groq=False, temperature=0)
 
     tools = [
@@ -36,7 +38,8 @@ def get_mars_agent(session_id):
     agent = create_openai_tools_agent(
         llm=llm,
         tools=tools,
-        prompt=prompt
+        prompt=prompt,
+        strict=True,
     )
 
     agent_executor = AgentExecutor(
@@ -54,3 +57,11 @@ def get_mars_agent(session_id):
     )
 
     return agent_with_chat_history
+
+
+def get_mars_agent():
+    return __mars_agent__
+
+
+SESSION_ID = os.environ.get("SESSION_ID", "test")
+__mars_agent__ = init_mars_agent(session_id=SESSION_ID)
