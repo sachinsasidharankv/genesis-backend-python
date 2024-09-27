@@ -8,7 +8,7 @@ from langchain_core.output_parsers import JsonOutputParser
 
 from src.models import QPSubtopicModel, QuestionModel
 from src.utils import get_llm, pil_image_to_base64
-from src.constants import exam, subtopics, student_summary
+from src.constants import exam, subtopics
 from src.chains.mutlimodal_rag import get_relevant_pdf_pages
 
 
@@ -16,7 +16,12 @@ UPLOAD_DIR = os.environ.get("UPLOAD_DIR", "uploads")
 
 
 @tool(return_direct=True)
-def qp_generation_tool(student_query: str, num_questions: int, time: int = None):
+def qp_generation_tool(
+    student_query: str,
+    student_summary: str,
+    num_questions: int,
+    time: int
+) -> str:
     """Tool used to generate a question paper based on student query.
     Number of questions and time are given by the user.
     The test can also be generated without a timer.
@@ -150,18 +155,14 @@ def qp_generation_tool(student_query: str, num_questions: int, time: int = None)
 
     qp_generation_chain = generate_mcqs | qp_parser
 
-    result = qp_generation_chain.invoke(
-        {
-            "prompt": qp_generation_prompt.format_prompt(
-                student_query=student_query,
-                num_questions=num_questions,
-                time=time,
-                exam=exam,
-                student_summary=student_summary,
-                identified_subtopics=", ".join(identified_subtopics)
-            ).to_string(),
-            "pages_base64": pages_base64
-        }
-    )
-
-    return json.dumps(result)
+    return json.dumps(qp_generation_chain.invoke({
+        "prompt": qp_generation_prompt.format_prompt(
+            student_query=student_query,
+            num_questions=num_questions,
+            time=time,
+            exam=exam,
+            student_summary=student_summary,
+            identified_subtopics=", ".join(identified_subtopics)
+        ).to_string(),
+        "pages_base64": pages_base64
+    }))

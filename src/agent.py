@@ -8,10 +8,10 @@ from src.tools import (
     feedback_tool,
     evaluation_tool,
     teaching_tool,
-    # reasoning_tool,
-    # wolfram_alpha_tool,
-    # wikipedia_tool,
-    # whatsapp_tool
+    reasoning_tool,
+    wolfram_alpha_tool,
+    wikipedia_tool,
+    whatsapp_tool
 )
 
 
@@ -24,10 +24,10 @@ def get_our_agent(memory=None):
         feedback_tool,
         evaluation_tool,
         teaching_tool,
-        # wikipedia_tool,
-        # wolfram_alpha_tool,
-        # reasoning_tool,
-        # whatsapp_tool
+        wikipedia_tool,
+        wolfram_alpha_tool,
+        reasoning_tool,
+        whatsapp_tool
     ]
 
     prompt = hub.pull("hwchase17/openai-tools-agent")

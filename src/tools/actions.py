@@ -10,7 +10,9 @@ from src.utils import get_llm
 
 
 @tool(return_direct=True)
-def action_tool(student_query: str) -> str:
+def action_tool(
+    student_query: str
+) -> str:
     """Tool used when the student has raised a concern or query"""
     llm = get_llm(temperature=0)
 

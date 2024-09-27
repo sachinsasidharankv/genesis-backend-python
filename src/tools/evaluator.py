@@ -9,9 +9,10 @@ from src.utils import get_llm
 @tool
 def evaluation_tool(
     student_query: str,
-    question_dict: dict,
+    student_summary: str,
+    question_dict: str,
 ) -> str:
-    "Teaching tool useful for teaching a student strictly based on syllabus."
+    "Teaching tool useful for teaching a student strictly based on a specific question."
 
     llm = get_llm(temperature=0)
 
@@ -53,6 +54,7 @@ def evaluation_tool(
     return evaluating_chain.invoke({
         "prompt": evaluating_prompt.format_prompt(
             student_query=student_query,
+            student_summary=student_summary,
             question_dict=question_dict,
         ).to_string()
     })
