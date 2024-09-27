@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "genesis-python"
+name = "genesis-backend-python"
 version = "0.1.0"
 description = ""
 authors = ["anandu-kv <anandu.s@keyvalue.systems>"]
