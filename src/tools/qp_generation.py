@@ -29,7 +29,7 @@ def qp_generation_tool(
     llm = get_llm(temperature=0)
 
     identify_subtopics_prompt_template = """
-    You are tasked to identify relevant subtopics for a student preparing for {exam} for {time} seconds.
+    You are tasked to identify relevant subtopics for a student preparing for {exam}.
     The subtopics should be selected from the following list based on the student's query and their past {exam} performance summary.
     You are allowed to select more than one subtopics from the list.
     The student's query is: "{student_query}".
@@ -94,7 +94,7 @@ def qp_generation_tool(
         pages_base64.append(pil_image_to_base64(page))
 
     qp_generation_prompt_template = """
-    You are tasked to generate multiple-choice questions for a student preparing for {exam}.
+    You are tasked to generate multiple-choice questions for a student preparing for {exam} for {time} seconds.
     The generated questions should be strictly based on the pages given from the syllabus.
     The subtopics selected for preparing the questions are: "{identified_subtopics}"
     The student has given a query: "{student_query}".
@@ -120,6 +120,7 @@ def qp_generation_tool(
         input_variables=[
             "num_questions",
             "exam",
+            "time",
             "student_query",
             "identified_subtopics",
             "student_summary"
