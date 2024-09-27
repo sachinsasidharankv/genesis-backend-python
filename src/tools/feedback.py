@@ -1,4 +1,5 @@
 from langchain.prompts import PromptTemplate
+from langchain.agents import tool
 from langchain_core.messages import SystemMessage
 from langchain_core.runnables import chain
 from langchain_core.output_parsers import JsonOutputParser
@@ -7,7 +8,9 @@ from src.models import FeedbackModel
 from src.utils import get_llm
 
 
-def get_feedback(exam_results: dict, student_summary: str) -> str:
+@tool
+def feedback_tool(exam_results: dict, student_summary: str) -> str:
+    """Tool used to generate feedback after analysing the results of an exam the student has taken"""
     llm = get_llm(temperature=0.5)
 
     feedback_prompt_template = """
@@ -27,19 +30,20 @@ def get_feedback(exam_results: dict, student_summary: str) -> str:
         template=feedback_prompt_template
     )
 
+    parser = JsonOutputParser(pydantic_object=FeedbackModel)
+
     @chain
     def generate_feedback(inputs: dict) -> str | list[str] | dict:
         response = llm.invoke([
             SystemMessage(
                 content=[
                     {"type": "text", "text": inputs["prompt"]},
+                    {"type": "text", "text": parser.get_format_instructions()},
                 ]
             )
         ])
 
         return response.content
-
-    parser = JsonOutputParser(pydantic_object=FeedbackModel)
 
     feedback_chain = generate_feedback | parser
 

@@ -45,7 +45,7 @@ def teaching_tool(
                     {
                         "type": "image_url",
                         "image_url": {
-                            "url": f"data:image/jpeg;base64,{inputs["reference_page_base64"]}"
+                            "url": f"data:image/jpeg;base64,{inputs['reference_page_base64']}"
                         }
                     }
                 ]

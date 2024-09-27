@@ -1,6 +1,5 @@
 # To be fetched from user DB
 exam = "JEE Mains"
-num_questions = 5
 student_summary = "Student is preparing for JEE Mains and expects to have a rank of below 10000. Student has very good knowledge in Electromagnetic Induction."
 
 # To be obtained after processing syllabus PDFs

@@ -10,21 +10,21 @@ from src.models import SubtopicListModel
 
 
 def preprocess_pdf(filepath, index_name):
-    rag_model = RAGMultiModalModel.from_pretrained("vidore/colpali")
+    # rag_model = RAGMultiModalModel.from_pretrained("vidore/colpali")
 
     vision_model = get_llm()
 
-    rag_model.index(
-        input_path=filepath,
-        index_name=index_name,
-        store_collection_with_index=False,
-        overwrite=True
-    )
+    # rag_model.index(
+    #     input_path=filepath,
+    #     index_name=index_name,
+    #     store_collection_with_index=False,
+    #     overwrite=True
+    # )
 
     images = get_relevant_pdf_pages(
-        search_query="table of contents, index",
+        search_query="contents table, page numbers, chapters",
         filepath=filepath,
-        top_k=5
+        top_k=15
     )
 
     images_base64 = []
@@ -61,7 +61,7 @@ def preprocess_pdf(filepath, index_name):
     vision_chain = get_subtopics | parser
 
     get_subtopics_prompt = """
-    From the given table of contents pages, identify the subtopics and their corresponding page numbers.
+    From the given table of contents pages, identify the subtopics.
     Be careful to select only relevant subtopics, because we will be using these subtopics to generate question papers later.
     """
 
@@ -73,8 +73,8 @@ def preprocess_pdf(filepath, index_name):
     return json.dumps(subtopics)
 
 
-def get_relevant_pdf_pages(search_query, filepath, top_k=5):
-    rag_model = RAGMultiModalModel.from_index(index_path="physics.pdf")
+def get_relevant_pdf_pages(search_query, filepath, top_k=10):
+    rag_model = RAGMultiModalModel.from_index(index_path=filepath)
 
     results = rag_model.search(search_query, k=top_k)
 
