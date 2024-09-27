@@ -26,6 +26,7 @@ os.makedirs(SUBTOPICS_DIR, exist_ok=True)
 
 class UserInput(BaseModel):
     context: str
+    query: str
 
 
 
@@ -110,7 +111,7 @@ def ask_copilot(req: UserInput):
 
     chat_history = memory.buffer_as_messages
     response = agent_executor.invoke({
-            "input": req.context,
+            "input": str(req),
             "chat_history": chat_history,
         })
     print(f"Agent: {response['output']}")
