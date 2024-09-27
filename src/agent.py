@@ -3,7 +3,7 @@ from langchain.agents import create_openai_tools_agent, AgentExecutor
 
 from src.utils import get_llm
 from src.tools import (
-    teaching_tool,
+    evaluation_tool,
     reasoning_tool,
     wolfram_alpha_tool,
     wikipedia_tool,
@@ -15,7 +15,7 @@ def get_our_agent(memory=None):
     llm = get_llm(temperature=0)
 
     tools = [
-        teaching_tool,
+        evaluation_tool,
         wikipedia_tool,
         wolfram_alpha_tool,
         reasoning_tool,
