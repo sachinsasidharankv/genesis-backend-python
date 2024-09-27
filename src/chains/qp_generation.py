@@ -1,4 +1,6 @@
 import json
+import os
+from langchain.agents import tool
 from langchain.prompts import PromptTemplate
 from langchain_core.runnables import chain
 from langchain_core.messages import HumanMessage
@@ -10,7 +12,12 @@ from src.constants import exam, num_questions, subtopics, student_summary
 from src.chains.mutlimodal_rag import get_relevant_pdf_pages
 
 
+UPLOAD_DIR = os.environ.get("UPLOAD_DIR", "uploads")
+
+
+@tool(return_direct=True)
 def qp_generation(student_query: str):
+    """Tool used to generate a question paper based on student query"""
     llm = get_llm(temperature=0)
 
     identify_subtopics_prompt_template = """
@@ -24,6 +31,7 @@ def qp_generation(student_query: str):
     Subtopics: {subtopics}
     
     Also modify the student query to effectively search in a RAG system to find relevant PDF pages based on the selected subtopics.
+    The modified query should strictly avoid common words and should only have words that can help retrieve relevant pages from a PDF.
     """
 
     identify_subtopics_prompt = PromptTemplate(
@@ -44,7 +52,7 @@ def qp_generation(student_query: str):
             HumanMessage(
                 content=[
                     {"type": "text", "text": inputs["prompt"]},
-                    {"type": "text", "text": qp_parser.get_format_instructions()},
+                    {"type": "text", "text": subtopic_parser.get_format_instructions()},
                 ]
             )
         ]
@@ -70,7 +78,7 @@ def qp_generation(student_query: str):
 
     relevant_pages = get_relevant_pdf_pages(
         search_query=modified_student_query,
-        filepath="physics.pdf"
+        filepath=f"{UPLOAD_DIR}/0.pdf"
     )
 
     pages_base64 = []
@@ -89,7 +97,7 @@ def qp_generation(student_query: str):
     For each question, provide:
     - The question (difficulty should be based on {exam}).
     - 4 answer options (follow the same pattern as of {exam}).
-    - The correct answer (the number of the correct option).
+    - The correct answer (the list index of the correct option).
     - The difficulty of the question (easy, medium or hard).
     - Total time allowed (time for answering this particular question (in seconds) based on {exam} and student query).
     - The related subtopics (taken from the give subtopic list).

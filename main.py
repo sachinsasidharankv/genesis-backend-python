@@ -8,6 +8,10 @@ load_dotenv()
 
 is_debug = os.environ.get("DEBUG_MODE") == "true"
 langchain.globals.set_debug(is_debug)
+UPLOAD_DIR = os.environ.get("UPLOAD_DIR", "uploads")
+SUBTOPICS_DIR = os.environ.get("SUBTOPICS_DIR", "subtopics")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(SUBTOPICS_DIR, exist_ok=True)
 
 
 if __name__ == "__main__":
@@ -19,10 +23,14 @@ if __name__ == "__main__":
 
         while True:
             user_input = input("\nEnter PDF filename: ")
-            print(preprocess_pdf(
-                filepath=user_input,
+            subtopics = preprocess_pdf(
+                filepath=f"{UPLOAD_DIR}/{user_input}",
                 index_name=user_input
-            ))
+            )
+
+            filename = f"{SUBTOPICS_DIR}/{user_input.split('.')[0]}_subtopics.json"
+            with open(filename, 'w', encoding='utf-8') as json_file:
+                json_file.write(subtopics)
 
     elif option == 2:
         from src.chains import qp_generation

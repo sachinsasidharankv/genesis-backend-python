@@ -2,22 +2,25 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 
-class SubtopicModel(BaseModel):
-    """Subtopic type"""
-    subtopic: str = Field("subtopic identified")
-    start_page_number: int = Field("starting page number of the subtopic")
-    end_page_number: int = Field("ending page number of the subtopic")
-
-
 class SubtopicListModel(BaseModel):
     """Subtopics of a PDF"""
-    subtopics: list[SubtopicModel] = Field(description="subtopics identified from the PDF pages")
+    subtopics: list[str] = Field(description="subtopics identified from the PDF pages")
 
 
 class QPSubtopicModel(BaseModel):
     """Subtopics of a PDF"""
     subtopics: list[str] = Field(description="subtopics selected to generate question paper")
     modified_student_query: str = Field(description="modified student query to search in RAG system of syllabus PDFs")
+
+
+class Action(str, Enum):
+    CHOOSE_EXAM = "CHOOSE_EXAM"
+    CHOOSE_NOTES = "CHOOSE_NOTES"
+
+
+class ActionModel(BaseModel):
+    """Action to be taken based on student request"""
+    action: Action = Field(description="action to be taken based on student query")
 
 
 class Difficulty(str, Enum):
@@ -30,7 +33,7 @@ class QuestionModel(BaseModel):
     """Question paper generation"""
     question: str = Field(description="generated question")
     options: list[str] = Field(description="multiple choice options for the generated question")
-    correct_answer: int = Field(description="the correct option number from the options list")
+    correct_answer: int = Field(description="the index of the correct option from the options list")
     difficulty: Difficulty = Field(description="difficulty level of the generated question")
     time: int = Field(description="total time allowed for answering the generated question in seconds")
     subtopics: list[str] = Field(description="related subtopics for the generated question")
