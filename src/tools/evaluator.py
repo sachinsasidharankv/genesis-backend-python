@@ -15,25 +15,28 @@ def evaluation_tool(
 
     llm = get_llm(temperature=0)
 
-    teaching_prompt_template = """
-    You are a teaching agent tasked with teaching a student about a particular topic.
-    The student has highlighted a particular text in a PDF page.
-    You need to answer the student's query strictly based on this highlighted text and the given PDF page.
+    evaluating_prompt_template = """
+    You are a evaluation plus teaching agent tasked with evaluating a student's answer to a specific question and clarifying the student's queries.
+    The question, its options, correct answer, student's answer, subtopics from which the question was taken, detailed explanation, etc. are given below.
+    You need to answer the student's query strictly based on this specific question and its information.
+    Be careful not to give the answer directly but guide the student to learn the topics by breaking down the question to simpler subproblems and asking the student to solve them.
+    You are allowed to give the detailed explanation only when you are convinced that the user is struggling to answer the question.
 
-    The highlighted text: "{question_dict}"
+    The question and its related information: "{question_dict}"
+    A summary of the student is also given: "{student_summary}"
 
-    Strictly remember not to answer anything other than any doubts related to the given PDF page.
+    Strictly remember not to answer anything other than any doubts related to the given question.
 
     Student query: {student_query}
     """
 
-    teaching_prompt = PromptTemplate(
+    evaluating_prompt = PromptTemplate(
         input_variables=["student_query", "question_dict"],
-        template=teaching_prompt_template
+        template=evaluating_prompt_template
     )
 
     @chain
-    def teaching_chain(inputs: dict) -> str | list[str] | dict:
+    def evaluating_chain(inputs: dict) -> str | list[str] | dict:
         response = llm.invoke([
             SystemMessage(
                 content=[
@@ -47,8 +50,8 @@ def evaluation_tool(
 
         return response.content
 
-    return teaching_chain.invoke({
-        "prompt": teaching_prompt.format_prompt(
+    return evaluating_chain.invoke({
+        "prompt": evaluating_prompt.format_prompt(
             student_query=student_query,
             question_dict=question_dict,
         ).to_string()
