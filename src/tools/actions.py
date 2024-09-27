@@ -19,7 +19,7 @@ def action_tool(
     action_prompt_template = """
     You are tasked with providing the student with a list of actions along with explaining why each action helps the student.
     Do not mention the action as such in the question because it is an enum, so use natural language always.
-    Start by giving all the actions and only if the student has asked otherwise, give specific actions.
+    Always give all the actions unless the student query requires you not to.
 
     Student query: {student_query}
     Actions: {actions}

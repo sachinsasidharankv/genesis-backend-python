@@ -142,8 +142,6 @@ def qp_generation_tool(
             )
         ]
 
-        print("hello")
-
         for page_base64 in inputs["pages_base64"]:
             messages[0].content.append(
                 {
@@ -153,8 +151,6 @@ def qp_generation_tool(
                     }
                 }
             )
-
-        print("hi")
 
         response = llm.invoke(messages)
         return response.content

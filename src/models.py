@@ -16,6 +16,7 @@ class QPSubtopicModel(BaseModel):
 class Action(str, Enum):
     ATTEND_EXAM = "ATTEND_EXAM"
     REFER_NOTES = "REFER_NOTES"
+    CONTINUE_CHAT = "CONTINUE_CHAT"
 
 
 class ActionModel(BaseModel):

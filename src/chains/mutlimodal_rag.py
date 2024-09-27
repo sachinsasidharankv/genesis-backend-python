@@ -10,16 +10,16 @@ from src.models import SubtopicListModel
 
 
 def preprocess_pdf(filepath, index_name):
-    # rag_model = RAGMultiModalModel.from_pretrained("vidore/colpali")
+    rag_model = RAGMultiModalModel.from_pretrained("vidore/colpali")
 
     vision_model = get_llm()
 
-    # rag_model.index(
-    #     input_path=filepath,
-    #     index_name=index_name,
-    #     store_collection_with_index=False,
-    #     overwrite=True
-    # )
+    rag_model.index(
+        input_path=filepath,
+        index_name=index_name,
+        store_collection_with_index=False,
+        overwrite=True
+    )
 
     images = get_relevant_pdf_pages(
         search_query="contents table, page numbers, chapters",
@@ -82,10 +82,9 @@ def get_relevant_pdf_pages(search_query, filepath, top_k=10):
     for result in results:
         print(f"{result.page_num}")
 
-    images = convert_from_path(filepath)
     final_images = []
-
     for result in results:
-        final_images.append(images[result.page_num - 1])
+        images = convert_from_path(filepath, first_page=result.page_num, last_page=result.page_num)
+        final_images.append(images[0])
 
     return final_images
