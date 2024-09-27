@@ -1,17 +1,32 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, UploadFile, File, Form
 from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from src.chains import preprocess_pdf, qp_generation
+from src.chains import preprocess_pdf
 from src.voice.websocket import websocket_endpoint
+import langchain.globals
 
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+
+load_dotenv(ROOT_DIR / ".env")
+
+
+print(os.getenv("OPENAI_API_KEY"))
+
+is_debug = os.environ.get("DEBUG_MODE") == "true"
+langchain.globals.set_debug(is_debug)
+UPLOAD_DIR = os.environ.get("UPLOAD_DIR", "uploads")
+SUBTOPICS_DIR = os.environ.get("SUBTOPICS_DIR", "subtopics")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+os.makedirs(SUBTOPICS_DIR, exist_ok=True)
 
 class UserInput(BaseModel):
-    context: dict
-    query: str
+    context: str
+
 
 
 app = FastAPI(title="FastAPI")
@@ -50,10 +65,10 @@ async def preprocess(file: UploadFile = File(...), user_input: str = Form(...)):
     return {"preprocessed": file_location}
 
 
-@app.get("/generate-question-paper")
-def generate_question_paper(req: UserInput):
-    qp_generation(req.user_input)
-    return {"question_paper": req}
+# @app.get("/generate-question-paper")
+# def generate_question_paper(req: UserInput):
+#     qp_generation(req.user_input)
+#     return {"question_paper": req}
 
 
 @app.get("/feedback")
@@ -81,3 +96,22 @@ def agent(req: UserInput):
         "context": req.context,
         "query": req.query
     }
+
+@app.post("/ask-copilot")
+def ask_copilot(req: UserInput):
+    from src.agent import get_our_agent
+    from langchain.memory import ConversationBufferMemory
+
+    memory = ConversationBufferMemory(
+        memory_key="chat_history",
+        return_messages=True
+    )
+    agent_executor = get_our_agent(memory=memory)
+
+    chat_history = memory.buffer_as_messages
+    response = agent_executor.invoke({
+            "input": req.context,
+            "chat_history": chat_history,
+        })
+    print(f"Agent: {response['output']}")
+    return {"response": response['output']}
