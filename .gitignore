@@ -178,3 +178,4 @@ pyrightconfig.json
 # Project specific directories
 .byaldi/
 poc/
+/tmp
