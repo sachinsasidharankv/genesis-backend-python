@@ -1,6 +1,6 @@
 from langchain.prompts import PromptTemplate
 from langchain.agents import tool
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import HumanMessage
 from langchain_core.runnables import chain
 
 from src.utils import get_llm
@@ -12,7 +12,8 @@ def teaching_tool(
     highlighted_text: str,
     reference_page_base64: str
 ) -> str:
-    "Teaching tool useful for teaching a student strictly based on syllabus."
+    """Teaching tool useful for teaching a student based on a base64 image given by the student.
+    """
 
     llm = get_llm(temperature=0)
 
@@ -36,7 +37,7 @@ def teaching_tool(
     @chain
     def teaching_chain(inputs: dict) -> str | list[str] | dict:
         response = llm.invoke([
-            SystemMessage(
+            HumanMessage(
                 content=[
                     {
                         "type": "text",

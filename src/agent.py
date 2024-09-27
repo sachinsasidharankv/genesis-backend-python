@@ -18,7 +18,7 @@ from src.tools import (
 
 
 def get_mars_agent(session_id):
-    llm = get_llm(temperature=0)
+    llm = get_llm(model_name="gpt-4o", use_groq=False, temperature=0)
 
     tools = [
         action_tool,

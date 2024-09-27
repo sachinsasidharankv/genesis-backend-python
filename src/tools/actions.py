@@ -1,7 +1,7 @@
 import json
 from langchain.prompts import PromptTemplate
 from langchain.agents import tool
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import HumanMessage
 from langchain_core.runnables import chain
 from langchain_core.output_parsers import JsonOutputParser
 
@@ -14,6 +14,7 @@ def action_tool(
     student_query: str
 ) -> str:
     """Tool used when the student has raised a concern or query"""
+
     llm = get_llm(temperature=0)
 
     action_prompt_template = """
@@ -35,7 +36,7 @@ def action_tool(
     @chain
     def select_action(inputs: dict) -> str | list[str] | dict:
         response = llm.invoke([
-            SystemMessage(
+            HumanMessage(
                 content=[
                     {"type": "text", "text": inputs["prompt"]},
                     {"type": "text", "text": parser.get_format_instructions()},

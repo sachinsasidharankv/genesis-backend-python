@@ -1,6 +1,6 @@
 from langchain.prompts import PromptTemplate
 from langchain.agents import tool
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import HumanMessage
 from langchain_core.runnables import chain
 
 from src.utils import get_llm
@@ -28,7 +28,7 @@ def reasoning_tool(
     @chain
     def reasoning_chain(inputs: dict) -> str | list[str] | dict:
         response = llm.invoke([
-            SystemMessage(
+            HumanMessage(
                 content=[
                     {"type": "text", "text": inputs["prompt"]},
                 ]

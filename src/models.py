@@ -16,7 +16,6 @@ class QPSubtopicModel(BaseModel):
 class Action(str, Enum):
     ATTEND_EXAM = "ATTEND_EXAM"
     REFER_NOTES = "REFER_NOTES"
-    CONTINUE_CHAT = "CONTINUE_CHAT"
 
 
 class ActionModel(BaseModel):
@@ -47,4 +46,4 @@ class FeedbackModel(BaseModel):
     overall_feedback: str = Field(description="one-line feedback on the overall performance")
     overall_suggestion: str = Field(description="one-line suggestion on how to improve")
     updated_summary: str = Field(description="updated student summary after analysing past summary and current feedback and insights")
-    question_specific_feedback: list[str] = Field(description="one-line feedback on each question")
+    question_specific_feedback: list[str] = Field(description="detailed one-line feedback on each question in the questions list, no need to specify the question number")

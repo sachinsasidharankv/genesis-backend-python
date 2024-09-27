@@ -21,12 +21,13 @@ def qp_generation_tool(
     student_query: str,
     student_summary: str,
     num_questions: int,
-    time: int
+    time: int | None
 ) -> str:
     """Tool used to generate a question paper based on student query.
     Number of questions and time are given by the user.
     The test can also be generated without a timer.
     """
+
     llm = get_llm(temperature=0)
 
     identify_subtopics_prompt_template = """

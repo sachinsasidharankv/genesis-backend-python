@@ -1,7 +1,7 @@
 import json
 from langchain.prompts import PromptTemplate
 from langchain.agents import tool
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import HumanMessage
 from langchain_core.runnables import chain
 from langchain_core.output_parsers import JsonOutputParser
 
@@ -15,18 +15,20 @@ def feedback_tool(
     student_summary: str
 ) -> str:
     """Tool used to generate feedback after analysing the results of an exam the student has taken"""
+
     llm = get_llm(temperature=0)
 
     feedback_prompt_template = """
-    You are a feedback generation tool tasked with generating feedback for a student's exam performance.
-    You should give a one-line feedback on each question, a one-line feedback on the whole exam and a one-line suggestion on how to improve.
+    You are a feedback generation tool tasked with generating detailed feedback for a student's exam performance.
+    You should give a detailed one-line feedback on the whole exam focusing on different subtopics and a one-line suggestion on how to improve in the weak areas.
+    Alsp, give a detailed one-line feedback on each question by analysing how the student answered the question.
 
     The results of the exam are given below: 
     {exam_results}
 
     A summary of the student's preferences and past performances are also given below.
     Use the summary to give suggestions on how to improve in upcoming exams.
-    Also, update the current summary to include the improvements and insights of the student.
+    Modify the existing summary by adding the strong and weak areas of the student in addition to the student's preferences.
     Student summary: "{student_summary}"
     """
 
@@ -40,7 +42,7 @@ def feedback_tool(
     @chain
     def generate_feedback(inputs: dict) -> str | list[str] | dict:
         response = llm.invoke([
-            SystemMessage(
+            HumanMessage(
                 content=[
                     {"type": "text", "text": inputs["prompt"]},
                     {"type": "text", "text": parser.get_format_instructions()},
