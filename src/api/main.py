@@ -6,10 +6,10 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 import langchain.globals
 
-from src.api.models import UserInput
+from src.api.models import UserInput, Chain
 from src.chains import (
     run_feedback_chain,
-    run_evaluation_chain,
+    run_guidance_chain,
     run_teacher_chain
 )
 from src.voice.websocket import websocket_endpoint
@@ -70,18 +70,18 @@ def ask_copilot(req: UserInput):
 
 @app.post("/ask-chain")
 def get_feedback(req: UserInput):
-    if req.context.get("exam_results_dict"):
+    if req.chain == Chain.FEEDBACK:
         response = run_feedback_chain(
             exam_results_dict=req.context.get("exam_results_dict"),
             student_summary=req.context.get("student_summary")
         )
-    elif req.context.get("question_dict"):
-        response = run_evaluation_chain(
+    elif req.chain == Chain.GUIDANCE:
+        response = run_guidance_chain(
             student_query=req.query,
             question_dict=req.context.get("question_dict"),
             student_summary=req.context.get("student_summary")
         )
-    elif req.context.get("reference_page_base64"):
+    elif req.chain == Chain.TEACHER:
         response = run_teacher_chain(
             student_query=req.query,
             highlighted_text=req.context.get("highlighted_text"),

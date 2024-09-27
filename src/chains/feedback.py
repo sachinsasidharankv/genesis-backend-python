@@ -8,7 +8,7 @@ from src.utils import get_llm
 
 
 def run_feedback_chain(
-    exam_results_dict: str,
+    exam_results_dict: dict,
     student_summary: str
 ) -> str:
     llm = get_llm(use_groq=True, temperature=0)

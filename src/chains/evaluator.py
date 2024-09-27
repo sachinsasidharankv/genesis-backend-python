@@ -1,39 +1,39 @@
 from langchain.prompts import PromptTemplate
+from langchain.memory import ConversationBufferMemory
 from langchain_core.messages import HumanMessage
 from langchain_core.runnables import chain
 
 from src.utils import get_llm
 
 
-def run_evaluation_chain(
+memory = ConversationBufferMemory(memory_key="history", input_key="student_query")
+
+
+def run_guidance_chain(
     student_query: str,
     question_dict: str,
     student_summary: str,
 ) -> str:
     llm = get_llm(use_groq=True, temperature=0)
 
-    evaluating_prompt_template = """
-    You are a guidance-focussed teaching agent tasked with evaluating a student's answer to a specific question and clarifying the student's queries.
-    You want the student to learn the topic from you, hence you keep on asking him/her questions until he/her arrives at the answer.
-    The question, its options, correct answer, student's answer, subtopics from which the question was taken, detailed explanation, etc. are given below.
-    You need to guide the student strictly based on this specific question and its information.
-    Be careful not to give the answer directly but guide the student to learn the topics by breaking down the question to simpler subproblems and asking the student to solve them.
+    guidance_prompt_template = """
+    You are a guidance-focussed teaching agent tasked with evaluating a student's answer to a specific question and clarifying the student's query.
+    Be careful not to give the answer directly but guide the student to learn the topics by solving a sub-question.
+    Your output should your response to the student in less than 50 words.
 
     The question and its related information: "{question_dict}"
     A summary of the student is also given: "{student_summary}"
-
-    Strictly remember not to answer anything other than any doubts related to the given question.
-
-    Student query: {student_query}
+    Previous conversation history: "{history}"
+    Student query: "{student_query}"
     """
 
-    evaluating_prompt = PromptTemplate(
+    guidance_prompt = PromptTemplate(
         input_variables=["student_query", "question_dict"],
-        template=evaluating_prompt_template
+        template=guidance_prompt_template
     )
 
     @chain
-    def evaluating_chain(inputs: dict) -> str | list[str] | dict:
+    def guidance_chain(inputs: dict) -> str | list[str] | dict:
         response = llm.invoke([
             HumanMessage(
                 content=[
@@ -45,12 +45,18 @@ def run_evaluation_chain(
             )
         ])
 
+        memory.save_context({"student_query": inputs["student_query"]}, {"response": response.content})
+
         return response.content
 
-    return evaluating_chain.invoke({
-        "prompt": evaluating_prompt.format_prompt(
+    conversation_history = memory.load_memory_variables({"student_query": student_query})["history"]
+
+    return guidance_chain.invoke({
+        "prompt": guidance_prompt.format_prompt(
             student_query=student_query,
             student_summary=student_summary,
             question_dict=question_dict,
-        ).to_string()
+            history=conversation_history
+        ).to_string(),
+        "student_query": student_query
     })

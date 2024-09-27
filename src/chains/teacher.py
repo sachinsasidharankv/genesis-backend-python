@@ -1,8 +1,12 @@
 from langchain.prompts import PromptTemplate
+from langchain.memory import ConversationBufferMemory
 from langchain_core.messages import HumanMessage
 from langchain_core.runnables import chain
 
 from src.utils import get_llm
+
+
+memory = ConversationBufferMemory(memory_key="history", input_key="student_query")
 
 
 def run_teacher_chain(
@@ -19,13 +23,12 @@ def run_teacher_chain(
 
     The highlighted text: "{highlighted_text}"
 
-    Strictly remember not to answer anything other than any doubts related to the given PDF page.
-
+    Previous conversation history: "{history}"
     Student query: {student_query}
     """
 
     teaching_prompt = PromptTemplate(
-        input_variables=["student_query", "highlighted_text"],
+        input_variables=["student_query", "highlighted_text", "history"],
         template=teaching_prompt_template
     )
 
@@ -48,12 +51,17 @@ def run_teacher_chain(
             )
         ])
 
+        memory.save_context({"student_query": inputs["student_query"]}, {"response": response.content})
+
         return response.content
+
+    conversation_history = memory.load_memory_variables({"student_query": student_query})["history"]
 
     return teaching_chain.invoke({
         "prompt": teaching_prompt.format_prompt(
             student_query=student_query,
             highlighted_text=highlighted_text,
+            history=conversation_history
         ).to_string(),
         "reference_page_base64": reference_page_base64
     })

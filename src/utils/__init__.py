@@ -29,7 +29,7 @@ def convert_response_output(response):
     if response:
         try:
             output = json.loads(response)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, TypeError):
             output = response
 
         return {"response": output}
