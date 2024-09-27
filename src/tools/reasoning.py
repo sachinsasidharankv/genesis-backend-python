@@ -15,9 +15,9 @@ def reasoning_tool(
     llm = get_llm(temperature=0)
 
     reasoning_prompt_template = """
-    You are a reasoning agent tasked with solving the user's logic-based questions.
+    You are a reasoning agent tasked with solving the student's logic-based questions.
     Logically arrive at the solution, and be factual. In your answers, clearly detail the steps involved and give
-    the final answer. Provide the response in bullet points. User query: {student_query}
+    the final answer. Provide the response in bullet points. Student query: "{student_query}"
     """
 
     reasoning_prompt = PromptTemplate(

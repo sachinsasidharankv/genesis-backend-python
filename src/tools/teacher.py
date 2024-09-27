@@ -16,7 +16,7 @@ def teaching_tool(
 
     llm = get_llm(temperature=0)
 
-    reasoning_prompt_template = """
+    teaching_prompt_template = """
     You are a teaching agent tasked with teaching a student about a particular topic.
     The student has highlighted a particular text in a PDF page.
     You need to answer the student's query strictly based on this highlighted text and the given PDF page.
@@ -28,9 +28,9 @@ def teaching_tool(
     Student query: {student_query}
     """
 
-    reasoning_prompt = PromptTemplate(
+    teaching_prompt = PromptTemplate(
         input_variables=["student_query", "highlighted_text"],
-        template=reasoning_prompt_template
+        template=teaching_prompt_template
     )
 
     @chain
@@ -55,7 +55,7 @@ def teaching_tool(
         return response.content
 
     return teaching_chain.invoke({
-        "prompt": reasoning_prompt.format_prompt(
+        "prompt": teaching_prompt.format_prompt(
             student_query=student_query,
             highlighted_text=highlighted_text,
         ).to_string(),
