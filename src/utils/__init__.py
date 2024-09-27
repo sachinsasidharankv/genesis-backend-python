@@ -26,9 +26,12 @@ def pil_image_to_base64(image: Image.Image, image_format="PNG"):
 
 
 def convert_response_output(response):
-    try:
-        output = json.loads(response['output'])
-    except json.JSONDecodeError:
-        output = response['output']
+    if response:
+        try:
+            output = json.loads(response)
+        except json.JSONDecodeError:
+            output = response
 
-    return {"response": output}
+        return {"response": output}
+    else:
+        raise NotImplementedError("Invalid chain")

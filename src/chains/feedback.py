@@ -1,6 +1,4 @@
-import json
 from langchain.prompts import PromptTemplate
-from langchain.agents import tool
 from langchain_core.messages import HumanMessage
 from langchain_core.runnables import chain
 from langchain_core.output_parsers import JsonOutputParser
@@ -9,14 +7,11 @@ from src.models import FeedbackModel
 from src.utils import get_llm
 
 
-@tool(return_direct=True)
-def feedback_tool(
+def run_feedback_chain(
     exam_results_dict: str,
     student_summary: str
 ) -> str:
-    """Tool used to generate feedback after analysing the results of an exam the student has taken"""
-
-    llm = get_llm(temperature=0)
+    llm = get_llm(use_groq=True, temperature=0)
 
     feedback_prompt_template = """
     You are a feedback generation tool tasked with generating detailed feedback for a student's exam performance.
@@ -54,9 +49,9 @@ def feedback_tool(
 
     feedback_chain = generate_feedback | parser
 
-    return json.dumps(feedback_chain.invoke({
+    return feedback_chain.invoke({
         "prompt": feedback_prompt.format_prompt(
             exam_results=exam_results_dict,
             student_summary=student_summary
         ).to_string()
-    }))
+    })

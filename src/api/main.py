@@ -2,12 +2,16 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, UploadFile, File, Form
+from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
 import langchain.globals
 
-from src.chains import preprocess_pdf
+from src.api.models import UserInput
+from src.chains import (
+    run_feedback_chain,
+    run_evaluation_chain,
+    run_teacher_chain
+)
 from src.voice.websocket import websocket_endpoint
 from src.utils import convert_response_output
 
@@ -24,11 +28,6 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(SUBTOPICS_DIR, exist_ok=True)
 
 
-class UserInput(BaseModel):
-    context: str
-    query: str
-
-
 app = FastAPI(title="FastAPI")
 
 app.add_middleware(
@@ -40,10 +39,6 @@ app.add_middleware(
     # Allows all headers (e.g., Authorization, Content-Type, etc.)
     allow_headers=["*"],
 )
-
-UPLOAD_DIRECTORY = "uploads"
-Path(UPLOAD_DIRECTORY).mkdir(parents=True, exist_ok=True)
-SESSION_ID = os.environ.get("SESSION_ID", "test")
 
 app.add_api_websocket_route("/ws", websocket_endpoint)
 
@@ -58,31 +53,42 @@ def health_check():
     return {"status": "ok"}
 
 
-@app.post("/preprocess")
-async def preprocess(file: UploadFile = File(...), user_input: str = Form(...)):
-    file_location = os.path.join(UPLOAD_DIRECTORY, file.filename)
-    with open(file_location, "wb") as f:
-        f.write(await file.read())
-    print(user_input)
-    print(preprocess_pdf(filepath=file_location, index_name=file.filename))
-    return {"preprocessed": file_location}
-
-
-# @app.post("/init-copilot")
-# def init_copilot(req: UserInput):
-#     response = init_mars_agent(session_id=req.user_id)
-#     return convert_response_output(response)
-
-
 @app.post("/ask-copilot")
 def ask_copilot(req: UserInput):
     from src.agent import get_mars_agent
 
     mars_agent = get_mars_agent()
+    session_id = os.environ.get("SESSION_ID", "test")
     response = mars_agent.invoke({
         "input": str(req)
     },
-        config={"configurable": {"session_id": SESSION_ID}},
+        config={"configurable": {"session_id": session_id}},
     )
     print(f"Agent: {response['output']}")
+    return convert_response_output(response['output'])
+
+
+@app.post("/ask-chain")
+def get_feedback(req: UserInput):
+    if req.context.get("exam_results_dict"):
+        response = run_feedback_chain(
+            exam_results_dict=req.context.get("exam_results_dict"),
+            student_summary=req.context.get("student_summary")
+        )
+    elif req.context.get("question_dict"):
+        response = run_evaluation_chain(
+            student_query=req.query,
+            question_dict=req.context.get("question_dict"),
+            student_summary=req.context.get("student_summary")
+        )
+    elif req.context.get("reference_page_base64"):
+        response = run_teacher_chain(
+            student_query=req.query,
+            highlighted_text=req.context.get("highlighted_text"),
+            reference_page_base64=req.context.get("reference_page_base64")
+        )
+    else:
+        response = None
+
+    print(f"Chain: {response}")
     return convert_response_output(response)

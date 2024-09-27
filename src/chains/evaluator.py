@@ -1,20 +1,16 @@
 from langchain.prompts import PromptTemplate
-from langchain.agents import tool
 from langchain_core.messages import HumanMessage
 from langchain_core.runnables import chain
 
 from src.utils import get_llm
 
 
-@tool
-def evaluation_tool(
+def run_evaluation_chain(
     student_query: str,
-    student_summary: str,
     question_dict: str,
+    student_summary: str,
 ) -> str:
-    "Teaching tool useful for teaching a student strictly based on a specific question."
-
-    llm = get_llm(temperature=0)
+    llm = get_llm(use_groq=True, temperature=0)
 
     evaluating_prompt_template = """
     You are a guidance-focussed teaching agent tasked with evaluating a student's answer to a specific question and clarifying the student's queries.

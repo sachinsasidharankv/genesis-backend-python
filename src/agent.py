@@ -9,9 +9,6 @@ from src.utils import get_llm
 from src.tools import (
     action_tool,
     qp_generation_tool,
-    feedback_tool,
-    evaluation_tool,
-    teaching_tool,
     reasoning_tool,
     wolfram_alpha_tool,
     wikipedia_tool,
@@ -25,9 +22,6 @@ def init_mars_agent(session_id):
     tools = [
         action_tool,
         qp_generation_tool,
-        feedback_tool,
-        evaluation_tool,
-        teaching_tool,
         wikipedia_tool,
         wolfram_alpha_tool,
         reasoning_tool,
