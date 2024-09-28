@@ -145,15 +145,15 @@ def qp_generation_tool(
             )
         ]
 
-        # for page_base64 in inputs["pages_base64"]:
-        #     messages[0].content.append(
-        #         {
-        #             "type": "image_url",
-        #             "image_url": {
-        #                 "url": f"data:image/jpeg;base64,{page_base64}"
-        #             }
-        #         }
-        #     )
+        for page_base64 in inputs["pages_base64"]:
+            messages[0].content.append(
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/jpeg;base64,{page_base64}"
+                    }
+                }
+            )
 
         response = qp_generation_llm.invoke(messages)
         return response.content
