@@ -6,13 +6,13 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 import langchain.globals
 
-from src.api.models import UserInput, Chain
+from src.api.models import UserInput, Chain, Context
 from src.chains import (
     run_feedback_chain,
     run_guidance_chain,
     run_teacher_chain
 )
-from src.voice.websocket import websocket_endpoint
+from src.voice.websocket import websocket_endpoint, language_model_processor
 from src.utils import convert_response_output
 
 
@@ -92,3 +92,9 @@ def get_feedback(req: UserInput):
 
     print(f"Chain: {response}")
     return convert_response_output(response)
+
+@app.post("/set-context")
+def set_context(req: Context):
+    language_model_processor.memory.chat_memory.clear()
+    language_model_processor.memory.chat_memory.add_user_message(req.context)
+    return {"status": "ok"}

@@ -13,3 +13,6 @@ class UserInput(BaseModel):
     context: dict
     query: str
     chain: Chain
+
+class Context(BaseModel):
+    context:str
