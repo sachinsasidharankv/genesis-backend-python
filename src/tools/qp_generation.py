@@ -28,7 +28,7 @@ def qp_generation_tool(
     The test can also be generated without a timer.
     """
 
-    llm = get_llm(temperature=0)
+    subtopics_llm = get_llm(temperature=0)
 
     identify_subtopics_prompt_template = """
     You are tasked to identify relevant subtopics for a student preparing for {exam}.
@@ -67,7 +67,7 @@ def qp_generation_tool(
             )
         ]
 
-        response = llm.invoke(messages)
+        response = subtopics_llm.invoke(messages)
         return response.content
 
     subtopic_chain = generate_subtopics | subtopic_parser
@@ -94,6 +94,8 @@ def qp_generation_tool(
     pages_base64 = []
     for page in relevant_pages:
         pages_base64.append(pil_image_to_base64(page))
+
+    qp_generation_llm = get_llm(temperature=0)
 
     qp_generation_prompt_template = """
     You are tasked to generate multiple-choice questions for a student preparing for {exam} for {time} seconds.
@@ -143,17 +145,17 @@ def qp_generation_tool(
             )
         ]
 
-        for page_base64 in inputs["pages_base64"]:
-            messages[0].content.append(
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": f"data:image/jpeg;base64,{page_base64}"
-                    }
-                }
-            )
+        # for page_base64 in inputs["pages_base64"]:
+        #     messages[0].content.append(
+        #         {
+        #             "type": "image_url",
+        #             "image_url": {
+        #                 "url": f"data:image/jpeg;base64,{page_base64}"
+        #             }
+        #         }
+        #     )
 
-        response = llm.invoke(messages)
+        response = qp_generation_llm.invoke(messages)
         return response.content
 
     qp_generation_chain = generate_mcqs | qp_parser

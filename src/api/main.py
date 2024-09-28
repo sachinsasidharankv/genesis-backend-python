@@ -30,6 +30,7 @@ os.makedirs(SUBTOPICS_DIR, exist_ok=True)
 
 app = FastAPI(title="FastAPI")
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allows all origins
