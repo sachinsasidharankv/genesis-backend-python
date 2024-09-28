@@ -36,7 +36,7 @@ if __name__ == "__main__":
     elif option == 2:
         from src.agent import get_mars_agent
 
-        mars_agent = get_mars_agent(session_id=SESSION_ID)
+        mars_agent = get_mars_agent()
         while True:
             student_input = input("\nStudent: ")
             response = mars_agent.invoke({
